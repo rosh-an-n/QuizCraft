@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Container,
   Paper,
@@ -27,6 +27,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useNavigate, useParams } from "react-router-dom";
 import { db, auth } from "../firebase";
 import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
+import SnackbarContext from "../SnackbarContext";
 
 const steps = ["Quiz Details", "Add Questions", "Review & Save"];
 
@@ -54,6 +55,7 @@ const CreateQuiz = () => {
   const navigate = useNavigate();
   const { quizId } = useParams();
   const isEdit = !!quizId;
+  const showSnackbar = useContext(SnackbarContext);
 
   // Fetch quiz data if editing
   useEffect(() => {
@@ -180,18 +182,21 @@ const CreateQuiz = () => {
       if (isEdit) {
         await updateDoc(doc(db, "quizzes", quizId), quizData);
         setSuccess("Quiz updated successfully!");
+        showSnackbar("Quiz updated successfully!", "success");
       } else {
         await addDoc(collection(db, "quizzes"), {
           ...quizData,
           createdAt: serverTimestamp()
         });
         setSuccess("Quiz saved successfully!");
+        showSnackbar("Quiz created successfully!", "success");
       }
       setTimeout(() => {
         navigate("/dashboard");
       }, 1200);
     } catch (err) {
       setError(err.message);
+      showSnackbar(err.message, "error");
     } finally {
       setLoading(false);
     }

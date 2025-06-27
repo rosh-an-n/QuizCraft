@@ -1,11 +1,13 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Tooltip } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 
-const NavBar = () => {
+const NavBar = ({ darkMode, onToggleDarkMode }) => {
   const [user, setUser] = React.useState(null);
   const navigate = useNavigate();
 
@@ -30,6 +32,11 @@ const NavBar = () => {
           {!user && <Button color="inherit" component={RouterLink} to="/login">Login</Button>}
           {user && <Button color="inherit" component={RouterLink} to="/dashboard">Dashboard</Button>}
           {user && <Button color="inherit" onClick={handleLogout}>Logout</Button>}
+          <Tooltip title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
+            <IconButton color="inherit" onClick={onToggleDarkMode} sx={{ ml: 1 }}>
+              {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>
