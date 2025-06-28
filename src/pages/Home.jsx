@@ -12,6 +12,7 @@ import {
   PersonRemove
 } from "@mui/icons-material";
 import { setDoc, doc } from "firebase/firestore";
+import { RecaptchaVerifier } from "firebase/auth";
 
 const Home = () => {
   return (

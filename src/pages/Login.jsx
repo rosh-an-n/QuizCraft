@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth";
@@ -60,11 +60,33 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    // Cleanup recaptchaVerifier on unmount
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, []);
+
   const handleSendOtp = async () => {
     setError("");
     setPhoneLoading(true);
     try {
-      setupRecaptcha();
+      // Ensure recaptcha container is in the DOM and always create a new verifier if needed
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: () => {},
+        },
+        auth
+      );
       const appVerifier = window.recaptchaVerifier;
       const confirmationResult = await signInWithPhoneNumber(auth, phone, appVerifier);
       window.confirmationResult = confirmationResult;
