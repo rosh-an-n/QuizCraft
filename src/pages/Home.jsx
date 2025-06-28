@@ -11,13 +11,7 @@ import {
   PersonAdd,
   PersonRemove
 } from "@mui/icons-material";
-import { setDoc, doc } from "firebase/firestore";
-import { RecaptchaVerifier } from "firebase/auth";
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import { auth } from "../firebase";
-
-const app = initializeApp(firebaseConfig);
 
 const Home = () => {
   console.log('auth:', auth);
