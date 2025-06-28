@@ -11,6 +11,7 @@ import {
   PersonAdd,
   PersonRemove
 } from "@mui/icons-material";
+import { setDoc, doc } from "firebase/firestore";
 
 const Home = () => {
   return (

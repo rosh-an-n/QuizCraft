@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { doc, getDoc, addDoc, collection, serverTimestamp, updateDoc } from "firebase/firestore";
+import { doc, getDoc, addDoc, collection, serverTimestamp, updateDoc, setDoc } from "firebase/firestore";
 import {
   Container,
   Paper,
@@ -184,10 +184,10 @@ const Quiz = () => {
       });
 
       // Update user stats
-      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      await setDoc(doc(db, "users", auth.currentUser.uid), {
         quizzesTaken: (userData?.quizzesTaken || 0) + 1,
         totalScore: (userData?.totalScore || 0) + score
-      });
+      }, { merge: true });
 
       showSnackbar("Quiz submitted successfully!", "success");
       navigate(`/result/${quizId}`, {
