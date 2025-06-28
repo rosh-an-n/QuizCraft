@@ -74,6 +74,9 @@ const Login = () => {
     setError("");
     setPhoneLoading(true);
     try {
+      // Debug logs
+      console.log('auth:', auth);
+      console.log('recaptcha-container:', document.getElementById('recaptcha-container'));
       // Ensure recaptcha container is in the DOM and always create a new verifier if needed
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
@@ -147,6 +150,8 @@ const Login = () => {
 
   return (
     <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f0f4fa">
+      {/* Always render recaptcha container at the top for phone auth */}
+      <div id="recaptcha-container" />
       <Container maxWidth="sm">
         <Paper elevation={8} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 4, bgcolor: 'white' }}>
           <Typography variant="h4" align="center" fontWeight={700} gutterBottom>
@@ -236,7 +241,6 @@ const Login = () => {
                 disabled={phoneLoading}
               />
             )}
-            <div id="recaptcha-container" style={{ margin: "8px 0" }} />
             {!otpSent ? (
               <Button
                 variant="contained"

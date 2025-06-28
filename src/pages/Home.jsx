@@ -13,10 +13,19 @@ import {
 } from "@mui/icons-material";
 import { setDoc, doc } from "firebase/firestore";
 import { RecaptchaVerifier } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { auth } from "../firebase";
+
+const app = initializeApp(firebaseConfig);
 
 const Home = () => {
+  console.log('auth:', auth);
+  console.log('recaptcha-container:', document.getElementById('recaptcha-container'));
+
   return (
     <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f0f4fa">
+      <div id="recaptcha-container" />
       <Container maxWidth="sm" sx={{ px: { xs: 0.5, sm: 2 } }}>
         <Paper elevation={6} sx={{ p: { xs: 2, sm: 6 }, textAlign: "center", borderRadius: 4, bgcolor: 'white' }}>
           <Typography variant="h2" fontWeight={800} color="primary" gutterBottom sx={{ fontSize: { xs: 32, sm: 48 } }}>
