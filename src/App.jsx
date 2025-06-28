@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider, CssBaseline, createTheme, Box, Snackbar, Alert } from "@mui/material";
 import SnackbarContext from "./SnackbarContext";
@@ -14,6 +14,38 @@ import UserProfile from "./components/UserProfile";
 import RequireAuth from "./components/RequireAuth";
 import BarChartIcon from '@mui/icons-material/BarChart';
 
+const theme = createTheme({
+  palette: {
+    primary: { main: '#1a73e8' }, // Google blue
+    secondary: { main: '#e91e63' },
+    background: { default: '#f5f5f5', paper: '#fff' },
+    text: { primary: '#222', secondary: '#444' },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 700 },
+    h3: { fontWeight: 700 },
+    h4: { fontWeight: 700 },
+    h5: { fontWeight: 700 },
+    h6: { fontWeight: 700 },
+    button: { textTransform: 'none', fontWeight: 500 },
+  },
+  shape: { borderRadius: 16 },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: { borderRadius: 8, boxShadow: 'none' },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: { borderRadius: 16, boxShadow: '0 2px 8px rgba(60,60,60,0.06)' },
+      },
+    },
+  },
+});
+
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const stored = localStorage.getItem("darkMode");
@@ -23,21 +55,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
   }, [darkMode]);
-
-  const theme = useMemo(() =>
-    createTheme({
-      palette: {
-        mode: darkMode ? "dark" : "light",
-        primary: {
-          main: darkMode ? "#90caf9" : "#1976d2"
-        },
-        background: {
-          default: darkMode ? "#121212" : "#f0f4fa"
-        }
-      }
-    }),
-    [darkMode]
-  );
 
   const handleToggleDarkMode = () => setDarkMode((prev) => !prev);
 

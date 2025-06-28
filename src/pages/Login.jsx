@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthP
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Button, TextField, Typography, Paper, Alert, Divider, Container, Grid, Box } from "@mui/material";
 import GoogleIcon from '@mui/icons-material/Google';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const provider = new GoogleAuthProvider();
 
@@ -76,15 +77,28 @@ const Login = () => {
   };
 
   return (
-    <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f0f4fa">
+    <Box
+      minHeight="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      sx={{
+        bgcolor: 'background.default',
+        background: 'linear-gradient(135deg, #e3f0ff 0%, #f5f5f5 100%)',
+        py: { xs: 4, sm: 8 },
+      }}
+    >
       <Container maxWidth="sm">
-        <Paper elevation={8} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 4, bgcolor: 'white' }}>
-          <Typography variant="h4" align="center" fontWeight={700} gutterBottom>
-            {isSignUp ? "Join QuizHub" : "Welcome Back"}
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 2 }}>
-            {isSignUp ? "Create your account to create and take quizzes with friends!" : "Login to access your quizzes and results."}
-          </Typography>
+        <Paper elevation={8} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 4, bgcolor: 'white', boxShadow: '0 4px 24px rgba(60,60,60,0.08)' }}>
+          <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
+            <LockOutlinedIcon sx={{ fontSize: 56, color: 'primary.main', mb: 1 }} />
+            <Typography variant="h4" align="center" fontWeight={900} gutterBottom sx={{ letterSpacing: 1 }}>
+              {isSignUp ? "Join QuizHub" : "Welcome Back"}
+            </Typography>
+            <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 2, fontWeight: 400 }}>
+              {isSignUp ? "Create your account to create and take quizzes with friends!" : "Login to access your quizzes and results."}
+            </Typography>
+          </Box>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           <form onSubmit={handleEmailAuth}>
             {isSignUp && (
@@ -127,7 +141,7 @@ const Login = () => {
               color="primary"
               fullWidth
               disabled={loading}
-              sx={{ mt: 2, py: 1.5, fontSize: 18, borderRadius: 2 }}
+              sx={{ mt: 2, py: 1.5, fontSize: 18, borderRadius: 2, fontWeight: 700, letterSpacing: 1 }}
             >
               {isSignUp ? "Create Account" : "Login"}
             </Button>
@@ -139,7 +153,7 @@ const Login = () => {
             onClick={handleGoogleSignIn}
             fullWidth
             disabled={loading}
-            sx={{ py: 1.5, fontSize: 18, borderRadius: 2 }}
+            sx={{ py: 1.5, fontSize: 18, borderRadius: 2, fontWeight: 700, letterSpacing: 1 }}
           >
             Continue with Google
           </Button>
@@ -147,7 +161,7 @@ const Login = () => {
             color="secondary"
             onClick={() => setIsSignUp(!isSignUp)}
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, fontWeight: 500 }}
           >
             {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
           </Button>

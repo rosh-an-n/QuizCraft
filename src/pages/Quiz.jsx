@@ -22,6 +22,7 @@ import {
   TextField
 } from "@mui/material";
 import SnackbarContext from "../SnackbarContext";
+import QuizIcon from '@mui/icons-material/Quiz';
 
 const Quiz = () => {
   const { quizId } = useParams();
@@ -216,24 +217,62 @@ const Quiz = () => {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
-        <CircularProgress />
+      <Box
+        minHeight="100vh"
+        sx={{
+          bgcolor: 'background.default',
+          background: 'linear-gradient(135deg, #e3f0ff 0%, #f5f5f5 100%)',
+          py: { xs: 2, sm: 4 },
+        }}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Container maxWidth="md" sx={{ px: { xs: 0.5, sm: 2 } }}>
+          <Box minHeight="60vh" display="flex" alignItems="center" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        </Container>
       </Box>
     );
   }
   if (error) {
     return (
-      <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Alert severity="error">{error}</Alert>
+      <Box
+        minHeight="100vh"
+        sx={{
+          bgcolor: 'background.default',
+          background: 'linear-gradient(135deg, #e3f0ff 0%, #f5f5f5 100%)',
+          py: { xs: 2, sm: 4 },
+        }}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Container maxWidth="md" sx={{ px: { xs: 0.5, sm: 2 } }}>
+          <Box minHeight="60vh" display="flex" alignItems="center" justifyContent="center">
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        </Container>
       </Box>
     );
   }
   if (!quiz) return null;
 
   return (
-    <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
+    <Box
+      minHeight="100vh"
+      sx={{
+        bgcolor: 'background.default',
+        background: 'linear-gradient(135deg, #e3f0ff 0%, #f5f5f5 100%)',
+        py: { xs: 2, sm: 4 },
+      }}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Container maxWidth="md" sx={{ px: { xs: 0.5, sm: 2 } }}>
-        <Paper elevation={8} sx={{ p: { xs: 1, sm: 3 }, borderRadius: 4 }}>
+        <Paper elevation={8} sx={{ p: { xs: 2, sm: 4 }, borderRadius: 4, bgcolor: 'white', boxShadow: '0 4px 24px rgba(60,60,60,0.08)' }}>
           <Dialog open={authDialogOpen} disableEscapeKeyDown disableBackdropClick>
             <DialogTitle>Authentication Required</DialogTitle>
             <DialogContent>
@@ -248,155 +287,106 @@ const Quiz = () => {
             </DialogActions>
           </Dialog>
           
-          <Typography variant="h4" fontWeight={700} color="primary" align="center" gutterBottom>
-            {quiz.title}
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary" align="center" gutterBottom>
-            {quiz.description}
-          </Typography>
-          {/* Per Quiz Timer UI */}
+          {/* Hero Section */}
+          <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
+            <QuizIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+            <Typography variant="h4" fontWeight={900} color="primary" gutterBottom sx={{ letterSpacing: 1, fontSize: { xs: 22, sm: 32 } }}>
+              {quiz.title}
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary" align="center" sx={{ mb: 2, fontWeight: 400 }}>
+              {quiz.description}
+            </Typography>
+          </Box>
+          {/* Timer */}
           {quiz.timerType === "perQuiz" && (
-            <Box mb={2}>
+            <Box mb={3}>
               <LinearProgress variant="determinate" value={100 * (timeLeft / timer)} sx={{ height: 10, borderRadius: 5 }} />
-              <Typography align="center" mt={1}>
+              <Typography align="center" mt={1} fontWeight={500} color="primary">
                 Time Left: {timeLeft}s
               </Typography>
             </Box>
           )}
-          {/* Per Question Timer UI */}
           {quiz.timerType === "perQuestion" && (
-            <Box mb={2}>
-              <LinearProgress variant="determinate" value={100 * (questionTimeLeft / (quiz.questions[currentQuestion]?.timer || timer))} sx={{ height: 10, borderRadius: 5, bgcolor: questionTimeLeft <= 10 ? 'error.light' : undefined }} />
-              <Typography align="center" mt={1} color={questionTimeLeft <= 10 ? 'error' : undefined} fontWeight={questionTimeLeft <= 10 ? 700 : 400}>
+            <Box mb={3}>
+              <LinearProgress variant="determinate" value={100 * (questionTimeLeft / (quiz.questions[currentQuestion]?.timer || quiz.timer))} sx={{ height: 10, borderRadius: 5 }} />
+              <Typography align="center" mt={1} fontWeight={500} color="primary">
                 Time Left: {questionTimeLeft}s
-                {questionTimeLeft <= 10 && questionTimeLeft > 0 && ' (Hurry up!)'}
               </Typography>
             </Box>
           )}
-          {/* Questions UI */}
-          {quiz.timerType === "perQuiz"
-            ? quiz.questions.map((q, qIdx) => (
-                <Box key={qIdx} mb={4}>
-                  <Typography variant="h6" fontWeight={600}>
-                    Q{qIdx + 1}: {q.text}
-                  </Typography>
-                  {q.allowMultiple ? (
-                    <Box>
-                      {q.options.map((opt, oIdx) => (
-                        <FormControlLabel
-                          key={oIdx}
-                          control={
-                            <Checkbox
-                              checked={answers[qIdx]?.selected?.includes(oIdx) || false}
-                              onChange={e => handleSelect(qIdx, oIdx, e.target.checked)}
-                              disabled={submitted}
-                            />
-                          }
-                          label={opt.text}
-                        />
-                      ))}
-                    </Box>
-                  ) : (
-                    <RadioGroup
-                      value={answers[qIdx]?.selected?.[0] ?? null}
-                      onChange={e => handleSelect(qIdx, parseInt(e.target.value), true)}
-                    >
-                      {q.options.map((opt, oIdx) => (
-                        <FormControlLabel
-                          key={oIdx}
-                          value={oIdx}
-                          control={<Radio disabled={submitted} />}
-                          label={opt.text}
-                        />
-                      ))}
-                    </RadioGroup>
-                  )}
-                </Box>
-              ))
-            : (
-              <Box mb={4}>
-                <Typography variant="h6" fontWeight={600}>
-                  Q{currentQuestion + 1}: {quiz.questions[currentQuestion].text}
-                </Typography>
-                {quiz.questions[currentQuestion].allowMultiple ? (
-                  <Box>
-                    {quiz.questions[currentQuestion].options.map((opt, oIdx) => (
+          {/* Question Card */}
+          <Box mb={3}>
+            <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, borderRadius: 3, bgcolor: '#f8fafc', boxShadow: '0 2px 8px rgba(60,60,60,0.06)' }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom sx={{ fontSize: { xs: 18, sm: 22 } }}>
+                Q{quiz.timerType === "perQuestion" ? currentQuestion + 1 : ''}{quiz.timerType === "perQuiz" ? quiz.questions.length > 1 ? `${currentQuestion + 1}/${quiz.questions.length}` : '' : ''}: {quiz.questions[currentQuestion]?.text}
+              </Typography>
+              <Box mt={2}>
+                {quiz.questions[currentQuestion]?.options.map((opt, oIdx) => (
+                  <Box key={oIdx} mb={1}>
+                    {quiz.questions[currentQuestion].allowMultiple ? (
                       <FormControlLabel
-                        key={oIdx}
                         control={
                           <Checkbox
                             checked={answers[currentQuestion]?.selected?.includes(oIdx) || false}
                             onChange={e => handleSelect(currentQuestion, oIdx, e.target.checked)}
-                            disabled={submitted || timedOutQuestions[currentQuestion]}
+                            disabled={quiz.timerType === "perQuestion" && timedOutQuestions[currentQuestion]}
                           />
                         }
-                        label={opt.text}
+                        label={<Typography sx={{ fontSize: 16 }}>{opt.text}</Typography>}
                       />
-                    ))}
-                  </Box>
-                ) : (
-                  <RadioGroup
-                    value={answers[currentQuestion]?.selected?.[0] ?? null}
-                    onChange={e => handleSelect(currentQuestion, parseInt(e.target.value), true)}
-                  >
-                    {quiz.questions[currentQuestion].options.map((opt, oIdx) => (
+                    ) : (
                       <FormControlLabel
-                        key={oIdx}
-                        value={oIdx}
-                        control={<Radio disabled={submitted || timedOutQuestions[currentQuestion]} />}
-                        label={opt.text}
+                        control={
+                          <Radio
+                            checked={answers[currentQuestion]?.selected?.includes(oIdx) || false}
+                            onChange={e => handleSelect(currentQuestion, oIdx, e.target.checked)}
+                            disabled={quiz.timerType === "perQuestion" && timedOutQuestions[currentQuestion]}
+                          />
+                        }
+                        label={<Typography sx={{ fontSize: 16 }}>{opt.text}</Typography>}
                       />
-                    ))}
-                  </RadioGroup>
-                )}
-                {/* Navigation for per-question */}
-                <Box display="flex" justifyContent="space-between" mt={2}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setCurrentQuestion(q => Math.max(0, q - 1))}
-                    disabled={currentQuestion === 0}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setTimedOutQuestions(prev => {
-                        const updated = [...prev];
-                        updated[currentQuestion] = true;
-                        return updated;
-                      });
-                      if (currentQuestion === quiz.questions.length - 1) {
-                        handleSubmit();
-                      } else {
-                        setCurrentQuestion(q => q + 1);
-                        setQuestionTimeLeft(
-                          quiz.questions[currentQuestion + 1]?.timer
-                            ? Number(quiz.questions[currentQuestion + 1].timer)
-                            : Number(quiz.timer)
-                        );
-                      }
-                    }}
-                    disabled={timedOutQuestions[currentQuestion] || submitted}
-                  >
-                    {currentQuestion === quiz.questions.length - 1 ? 'Submit' : 'Next'}
-                  </Button>
-                </Box>
+                    )}
+                  </Box>
+                ))}
               </Box>
+            </Paper>
+          </Box>
+          {/* Navigation & Submit */}
+          <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} justifyContent="center" alignItems="center">
+            {quiz.timerType === "perQuiz" && quiz.questions.length > 1 && (
+              <Button
+                variant="outlined"
+                color="primary"
+                disabled={currentQuestion === 0}
+                onClick={() => setCurrentQuestion(q => q - 1)}
+                sx={{ minWidth: 120, fontWeight: 500 }}
+              >
+                Previous
+              </Button>
             )}
-          {submitError && <Alert severity="error" sx={{ mb: 2 }}>{submitError}</Alert>}
-          {quiz.timerType === "perQuiz" && (
+            {quiz.timerType === "perQuiz" && quiz.questions.length > 1 && (
+              <Button
+                variant="outlined"
+                color="primary"
+                disabled={currentQuestion === quiz.questions.length - 1}
+                onClick={() => setCurrentQuestion(q => q + 1)}
+                sx={{ minWidth: 120, fontWeight: 500 }}
+              >
+                Next
+              </Button>
+            )}
             <Button
               variant="contained"
-              color="primary"
+              color="success"
               size="large"
               onClick={handleSubmit}
-              disabled={submitted || submitLoading}
-              fullWidth
+              disabled={submitLoading || submitted || (quiz.timerType === "perQuestion" && timedOutQuestions[currentQuestion])}
+              sx={{ minWidth: 160, fontWeight: 700, py: 1.5, fontSize: 18, borderRadius: 2 }}
             >
               {submitLoading ? "Submitting..." : "Submit Quiz"}
             </Button>
-          )}
+          </Box>
+          {submitError && <Alert severity="error" sx={{ mt: 2 }}>{submitError}</Alert>}
         </Paper>
       </Container>
     </Box>

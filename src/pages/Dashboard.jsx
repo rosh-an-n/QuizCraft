@@ -49,6 +49,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import QuizIcon from '@mui/icons-material/Quiz';
 import PeopleIcon from '@mui/icons-material/People';
 import ShareIcon from '@mui/icons-material/Share';
+import AddIcon from '@mui/icons-material/Add';
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc, getDoc } from "firebase/firestore";
 import SnackbarContext from "../SnackbarContext";
 
@@ -274,112 +275,35 @@ const Dashboard = () => {
   };
 
   return (
-    <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f0f4fa">
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* User Profile Section */}
+    <Box
+      minHeight="100vh"
+      sx={{
+        bgcolor: 'background.default',
+        background: 'linear-gradient(135deg, #e3f0ff 0%, #f5f5f5 100%)',
+        py: { xs: 2, sm: 4 },
+      }}
+    >
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 } }}>
+        {/* Hero Section */}
         {userProfile && (
-          <Paper elevation={8} sx={{ p: 3, mb: 3, borderRadius: 4 }}>
-            <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-              <Box display="flex" alignItems="center">
-                <Avatar
-                  src={userProfile.photoURL}
-                  sx={{ width: 60, height: 60, mr: 2 }}
-                >
-                  <PersonIcon sx={{ fontSize: 30 }} />
-                </Avatar>
-                <Box>
-                  <Typography variant="h5" fontWeight={700}>
-                    {userProfile.displayName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {userProfile.email}
-                  </Typography>
-                </Box>
-              </Box>
-              <Box display="flex" gap={1}>
-                <Button
-                  variant="outlined"
-                  startIcon={<ShareIcon />}
-                  onClick={handleShareProfile}
-                >
-                  Share Profile
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => navigate(`/profile/${auth.currentUser.uid}`)}
-                >
-                  View Profile
-                </Button>
-              </Box>
-            </Box>
-            
-            {/* Stats Grid */}
-            <Grid container spacing={2} mb={2}>
-              <Grid item xs={6} sm={3}>
-                <Card>
-                  <CardContent textAlign="center" sx={{ py: 2 }}>
-                    <Typography variant="h4" color="primary" fontWeight={700}>
-                      {userProfile.quizzesCreated || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Created
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Card>
-                  <CardContent textAlign="center" sx={{ py: 2 }}>
-                    <Typography variant="h4" color="secondary" fontWeight={700}>
-                      {userProfile.quizzesTaken || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Taken
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Card>
-                  <CardContent textAlign="center" sx={{ py: 2 }}>
-                    <Typography variant="h4" color="success.main" fontWeight={700}>
-                      {userProfile.followers?.length || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Followers
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Card>
-                  <CardContent textAlign="center" sx={{ py: 2 }}>
-                    <Typography variant="h4" color="warning.main" fontWeight={700}>
-                      {userProfile.totalScore || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Score
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-
-            {/* Badges */}
-            <Box>
-              <Typography variant="h6" fontWeight={600} mb={1}>
-                Badges Earned
+          <Paper elevation={8} sx={{ p: { xs: 2, sm: 4 }, mb: 4, borderRadius: 4, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 3, bgcolor: 'white', boxShadow: '0 4px 24px rgba(60,60,60,0.08)' }}>
+            <Avatar src={userProfile.photoURL} sx={{ width: 80, height: 80, mr: { sm: 3 }, mb: { xs: 2, sm: 0 } }}>
+              <PersonIcon sx={{ fontSize: 40 }} />
+            </Avatar>
+            <Box flex={1} minWidth={0}>
+              <Typography variant="h4" fontWeight={900} gutterBottom sx={{ letterSpacing: 1, fontSize: { xs: 24, sm: 32 } }}>
+                {userProfile.displayName}
               </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                {userProfile.email}
+              </Typography>
+              <Box display="flex" gap={1} flexWrap="wrap" mb={1}>
+                <Chip icon={<QuizIcon />} label={`${userProfile.quizzesCreated || 0} Quizzes Created`} color="primary" variant="outlined" />
+                <Chip icon={<EmojiEventsIcon />} label={`${userProfile.quizzesTaken || 0} Quizzes Taken`} color="secondary" variant="outlined" />
+              </Box>
               <Box display="flex" gap={1} flexWrap="wrap">
-                {BADGES.map(badge => (
-                  <Chip
-                    key={badge.key}
-                    icon={badge.icon}
-                    label={badge.label}
-                    color={badges[badge.key] ? "primary" : "default"}
-                    variant={badges[badge.key] ? "filled" : "outlined"}
-                    title={badge.desc}
-                  />
+                {BADGES.filter(b => badges[b.key]).map(b => (
+                  <Tooltip title={b.desc} key={b.key}><Chip icon={b.icon} label={b.label} color="success" /></Tooltip>
                 ))}
               </Box>
             </Box>
@@ -743,6 +667,19 @@ const Dashboard = () => {
             <Button onClick={() => setSelectedResult(null)}>Close</Button>
           </DialogActions>
         </Dialog>
+
+        {/* Floating Action Button for Create Quiz (mobile) */}
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300, display: { xs: 'flex', sm: 'none' } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={handleCreateQuiz}
+            sx={{ borderRadius: '50%', minWidth: 0, width: 56, height: 56, boxShadow: 3 }}
+          >
+            <AddIcon sx={{ fontSize: 32 }} />
+          </Button>
+        </Box>
       </Container>
     </Box>
   );

@@ -17,7 +17,13 @@ import {
   CircularProgress,
   Alert,
   IconButton,
-  Tooltip
+  Tooltip,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar
 } from "@mui/material";
 import {
   Person,
@@ -29,6 +35,7 @@ import {
   PersonAdd,
   PersonRemove
 } from "@mui/icons-material";
+import { updateProfile } from "firebase/auth";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -39,6 +46,12 @@ const UserProfile = () => {
   const [error, setError] = useState("");
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editPhoto, setEditPhoto] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -112,6 +125,42 @@ const UserProfile = () => {
     // You can add a snackbar notification here
   };
 
+  // Open dialog with current values
+  const handleEditOpen = () => {
+    setEditName(user.displayName || "");
+    setEditPhoto(user.photoURL || "");
+    setEditBio(user.bio || "");
+    setEditOpen(true);
+  };
+
+  const handleEditClose = () => setEditOpen(false);
+
+  // Save profile changes
+  const handleEditSave = async () => {
+    setEditLoading(true);
+    try {
+      // Update Firestore
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        displayName: editName,
+        photoURL: editPhoto,
+        bio: editBio
+      });
+      // Update Firebase Auth profile
+      await updateProfile(auth.currentUser, {
+        displayName: editName,
+        photoURL: editPhoto
+      });
+      setSnackbar({ open: true, message: "Profile updated!", severity: "success" });
+      setEditOpen(false);
+      // Refresh user data
+      setUser(prev => ({ ...prev, displayName: editName, photoURL: editPhoto, bio: editBio }));
+    } catch (err) {
+      setSnackbar({ open: true, message: err.message, severity: "error" });
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
@@ -180,7 +229,7 @@ const UserProfile = () => {
               <Button
                 variant="outlined"
                 startIcon={<Edit />}
-                onClick={() => navigate("/dashboard")}
+                onClick={handleEditOpen}
               >
                 Edit Profile
               </Button>
@@ -280,6 +329,54 @@ const UserProfile = () => {
           </Button>
         </Box>
       </Paper>
+      {/* Edit Profile Dialog */}
+      <Dialog open={editOpen} onClose={handleEditClose} maxWidth="xs" fullWidth>
+        <DialogTitle>Edit Profile</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Display Name"
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Photo URL"
+            value={editPhoto}
+            onChange={e => setEditPhoto(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          {editPhoto && (
+            <Box display="flex" justifyContent="center" my={2}>
+              <Avatar src={editPhoto} sx={{ width: 64, height: 64 }} />
+            </Box>
+          )}
+          <TextField
+            label="Bio"
+            value={editBio}
+            onChange={e => setEditBio(e.target.value)}
+            fullWidth
+            margin="normal"
+            multiline
+            minRows={2}
+            maxRows={4}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose} disabled={editLoading}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained" disabled={editLoading}>
+            {editLoading ? "Saving..." : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Container>
   );
 };

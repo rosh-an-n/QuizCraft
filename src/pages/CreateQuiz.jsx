@@ -34,7 +34,7 @@ const steps = ["Quiz Details", "Add Questions", "Review & Save"];
 const defaultOption = () => ({ text: "", isCorrect: false });
 const defaultQuestion = () => ({
   text: "",
-  options: [defaultOption(), defaultOption(), defaultOption()],
+  options: [defaultOption()],
   timer: 30,
   allowMultiple: false
 });
@@ -129,7 +129,7 @@ const CreateQuiz = () => {
 
   const removeOption = (qIdx, oIdx) => {
     const updated = [...questions];
-    if (updated[qIdx].options.length > 3) {
+    if (updated[qIdx].options.length > 1) {
       updated[qIdx].options.splice(oIdx, 1);
       setQuestions(updated);
     }
@@ -328,7 +328,7 @@ const CreateQuiz = () => {
                         )}
                       </Grid>
                       <Grid item xs={2}>
-                        <IconButton onClick={() => removeOption(qIdx, oIdx)} disabled={q.options.length === 3} color="error">
+                        <IconButton onClick={() => removeOption(qIdx, oIdx)} disabled={q.options.length === 1} color="error">
                           <RemoveCircleOutlineIcon />
                         </IconButton>
                       </Grid>
