@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Button, TextField, Typography, Paper, Alert, Divider, Container, Grid, Box } from "@mui/material";
 import GoogleIcon from '@mui/icons-material/Google';
@@ -16,10 +16,6 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [phoneLoading, setPhoneLoading] = useState(false);
 
   const createUserProfile = async (user, name) => {
     try {
@@ -43,75 +39,6 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Error creating user profile:", err);
-    }
-  };
-
-  // Setup Recaptcha only once
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {},
-        },
-        auth
-      );
-    }
-  };
-
-  useEffect(() => {
-    // Cleanup recaptchaVerifier on unmount
-    return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-    };
-  }, []);
-
-  const handleSendOtp = async () => {
-    setError("");
-    setPhoneLoading(true);
-    try {
-      // Debug logs
-      console.log('auth:', auth);
-      console.log('recaptcha-container:', document.getElementById('recaptcha-container'));
-      // Ensure recaptcha container is in the DOM and always create a new verifier if needed
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {},
-        },
-        auth
-      );
-      const appVerifier = window.recaptchaVerifier;
-      const confirmationResult = await signInWithPhoneNumber(auth, phone, appVerifier);
-      window.confirmationResult = confirmationResult;
-      setOtpSent(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setPhoneLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    setError("");
-    setPhoneLoading(true);
-    try {
-      const result = await window.confirmationResult.confirm(otp);
-      await createUserProfile(result.user, result.user.displayName);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setPhoneLoading(false);
     }
   };
 
@@ -150,8 +77,6 @@ const Login = () => {
 
   return (
     <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f0f4fa">
-      {/* Always render recaptcha container at the top for phone auth */}
-      <div id="recaptcha-container" />
       <Container maxWidth="sm">
         <Paper elevation={8} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 4, bgcolor: 'white' }}>
           <Typography variant="h4" align="center" fontWeight={700} gutterBottom>
@@ -218,53 +143,6 @@ const Login = () => {
           >
             Continue with Google
           </Button>
-          {/* Phone Auth Section */}
-          <Divider sx={{ my: 3 }}>or</Divider>
-          <Box>
-            <TextField
-              label="Phone Number"
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              fullWidth
-              margin="normal"
-              placeholder="+1 234 567 8901"
-              disabled={otpSent || phoneLoading}
-            />
-            {otpSent && (
-              <TextField
-                label="Enter OTP"
-                value={otp}
-                onChange={e => setOtp(e.target.value)}
-                fullWidth
-                margin="normal"
-                disabled={phoneLoading}
-              />
-            )}
-            {!otpSent ? (
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={handleSendOtp}
-                disabled={phoneLoading || !phone}
-                sx={{ mt: 1, py: 1.5, fontSize: 18, borderRadius: 2 }}
-              >
-                {phoneLoading ? "Sending..." : "Send OTP"}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                color="success"
-                fullWidth
-                onClick={handleVerifyOtp}
-                disabled={phoneLoading || !otp}
-                sx={{ mt: 1, py: 1.5, fontSize: 18, borderRadius: 2 }}
-              >
-                {phoneLoading ? "Verifying..." : "Verify & Login"}
-              </Button>
-            )}
-          </Box>
           <Button
             color="secondary"
             onClick={() => setIsSignUp(!isSignUp)}
