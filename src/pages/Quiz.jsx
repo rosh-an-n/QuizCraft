@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "../firebase";
-import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { doc, getDoc, addDoc, collection, serverTimestamp, updateDoc } from "firebase/firestore";
 import {
   Container,
   Paper,
@@ -34,8 +34,7 @@ const Quiz = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const timerRef = useRef();
   const [submitted, setSubmitted] = useState(false);
-  const [nameDialogOpen, setNameDialogOpen] = useState(true);
-  const [participantName, setParticipantName] = useState("");
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const showSnackbar = useContext(SnackbarContext);
@@ -43,8 +42,13 @@ const Quiz = () => {
   const [questionTimeLeft, setQuestionTimeLeft] = useState(null);
   const [timedOutQuestions, setTimedOutQuestions] = useState([]); // array of bools
 
-  // Fetch quiz data
+  // Check authentication first
   useEffect(() => {
+    if (!auth.currentUser) {
+      setAuthDialogOpen(true);
+      return;
+    }
+    
     const fetchQuiz = async () => {
       setLoading(true);
       setError("");
@@ -148,6 +152,7 @@ const Quiz = () => {
     setSubmitted(true);
     setSubmitLoading(true);
     setSubmitError("");
+    
     // Calculate score
     let score = 0;
     quiz.questions.forEach((q, qIdx) => {
@@ -160,24 +165,38 @@ const Quiz = () => {
         score += 1;
       }
     });
+
+    // Get user profile
+    const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+    const userData = userDoc.data();
+    
     // Save result to Firestore
     try {
       const docRef = await addDoc(collection(db, "results"), {
         quizId,
-        name: participantName || "Anonymous",
+        userId: auth.currentUser.uid,
+        userName: userData?.displayName || "Unknown User",
+        userEmail: auth.currentUser.email,
         score,
         total: quiz.questions.length,
         answers,
         submittedAt: serverTimestamp()
       });
-      showSnackbar("Quiz submitted!", "success");
+
+      // Update user stats
+      await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        quizzesTaken: (userData?.quizzesTaken || 0) + 1,
+        totalScore: (userData?.totalScore || 0) + score
+      });
+
+      showSnackbar("Quiz submitted successfully!", "success");
       navigate(`/result/${quizId}`, {
         state: {
           score,
           total: quiz.questions.length,
           answers,
           quiz,
-          name: participantName || "Anonymous",
+          userName: userData?.displayName || "Unknown User",
           resultId: docRef.id
         }
       });
@@ -189,9 +208,10 @@ const Quiz = () => {
     }
   };
 
-  // Handle name dialog
-  const handleNameSubmit = () => {
-    setNameDialogOpen(false);
+  // Handle authentication dialog
+  const handleAuthDialogClose = () => {
+    setAuthDialogOpen(false);
+    navigate("/login");
   };
 
   if (loading) {
@@ -214,22 +234,20 @@ const Quiz = () => {
     <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center">
       <Container maxWidth="md" sx={{ px: { xs: 0.5, sm: 2 } }}>
         <Paper elevation={8} sx={{ p: { xs: 1, sm: 3 }, borderRadius: 4 }}>
-          <Dialog open={nameDialogOpen} disableEscapeKeyDown disableBackdropClick>
-            <DialogTitle>Enter Your Name</DialogTitle>
+          <Dialog open={authDialogOpen} disableEscapeKeyDown disableBackdropClick>
+            <DialogTitle>Authentication Required</DialogTitle>
             <DialogContent>
-              <TextField
-                label="Name (optional)"
-                value={participantName}
-                onChange={e => setParticipantName(e.target.value)}
-                fullWidth
-                autoFocus
-                sx={{ mt: 1 }}
-              />
+              <Typography>
+                You need to be logged in to take this quiz. Please create an account or login to continue.
+              </Typography>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleNameSubmit} variant="contained">Start Quiz</Button>
+              <Button onClick={handleAuthDialogClose} variant="contained">
+                Go to Login
+              </Button>
             </DialogActions>
           </Dialog>
+          
           <Typography variant="h4" fontWeight={700} color="primary" align="center" gutterBottom>
             {quiz.title}
           </Typography>

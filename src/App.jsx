@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateQuiz from "./pages/CreateQuiz";
 import Quiz from "./pages/Quiz";
 import Result from "./pages/Result";
+import UserProfile from "./components/UserProfile";
 import RequireAuth from "./components/RequireAuth";
 import BarChartIcon from '@mui/icons-material/BarChart';
 
@@ -60,8 +61,9 @@ function App() {
               <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
               <Route path="/create" element={<RequireAuth><CreateQuiz /></RequireAuth>} />
               <Route path="/edit/:quizId" element={<RequireAuth><CreateQuiz /></RequireAuth>} />
-              <Route path="/quiz/:quizId" element={<Quiz />} />
-              <Route path="/result/:quizId" element={<Result />} />
+              <Route path="/quiz/:quizId" element={<RequireAuth><Quiz /></RequireAuth>} />
+              <Route path="/result/:quizId" element={<RequireAuth><Result /></RequireAuth>} />
+              <Route path="/profile/:userId" element={<RequireAuth><UserProfile /></RequireAuth>} />
             </Routes>
           </Router>
           <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={handleSnackbarClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>

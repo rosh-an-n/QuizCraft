@@ -1,6 +1,16 @@
 import React from "react";
 import { Container, Typography, Button, Paper, Box } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import {
+  Person,
+  Quiz,
+  EmojiEvents,
+  People,
+  Share,
+  Edit,
+  PersonAdd,
+  PersonRemove
+} from "@mui/icons-material";
 
 const Home = () => {
   return (

@@ -59,7 +59,7 @@ const BADGES = [
   { key: 'social', label: 'Social Butterfly', icon: <PeopleIcon color="success" />, desc: 'Gained your first follower!' }
 ];
 
-const Dashboard = () => {
+const SocialDashboard = () => {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [takenQuizzes, setTakenQuizzes] = useState([]);
@@ -748,4 +748,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default SocialDashboard; 

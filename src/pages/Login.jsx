@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Button, TextField, Typography, Paper, Alert, Divider, Container, Grid, Box } from "@mui/material";
 import GoogleIcon from '@mui/icons-material/Google';
 
@@ -11,15 +12,42 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const createUserProfile = async (user, name) => {
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        // Create new user profile
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: name || user.displayName || "Quiz User",
+          photoURL: user.photoURL || null,
+          createdAt: new Date(),
+          quizzesCreated: 0,
+          quizzesTaken: 0,
+          totalScore: 0,
+          followers: [],
+          following: []
+        });
+      }
+    } catch (err) {
+      console.error("Error creating user profile:", err);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setError("");
     setLoading(true);
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      await createUserProfile(result.user, result.user.displayName);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
@@ -34,7 +62,8 @@ const Login = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await createUserProfile(result.user, displayName);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -51,13 +80,25 @@ const Login = () => {
       <Container maxWidth="sm">
         <Paper elevation={8} sx={{ p: { xs: 3, sm: 6 }, borderRadius: 4, bgcolor: 'white' }}>
           <Typography variant="h4" align="center" fontWeight={700} gutterBottom>
-            {isSignUp ? "Sign Up" : "Login"} (Creator Only)
+            {isSignUp ? "Join QuizHub" : "Welcome Back"}
           </Typography>
           <Typography variant="subtitle1" align="center" color="text.secondary" sx={{ mb: 2 }}>
-            {isSignUp ? "Create your account to start making quizzes." : "Login to create and manage your quizzes."}
+            {isSignUp ? "Create your account to create and take quizzes with friends!" : "Login to access your quizzes and results."}
           </Typography>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           <form onSubmit={handleEmailAuth}>
+            {isSignUp && (
+              <TextField
+                label="Display Name"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                fullWidth
+                margin="normal"
+                required
+                size="large"
+                sx={{ fontSize: 18 }}
+              />
+            )}
             <TextField
               label="Email"
               type="email"
@@ -88,7 +129,7 @@ const Login = () => {
               disabled={loading}
               sx={{ mt: 2, py: 1.5, fontSize: 18, borderRadius: 2 }}
             >
-              {isSignUp ? "Sign Up" : "Login"}
+              {isSignUp ? "Create Account" : "Login"}
             </Button>
           </form>
           <Divider sx={{ my: 3 }}>or</Divider>
