@@ -63,9 +63,17 @@ const Home = () => {
             </Box>
           </Box>
         </Paper>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          align="center"
+          sx={{ mt: 2, fontStyle: 'italic' }}
+        >
+          made with passion by ~Roshan Naik
+        </Typography>
       </Container>
     </Box>
   );
 };
 
-export default Home; 
+export default Home;
