@@ -69,7 +69,7 @@ const Home = () => {
           align="center"
           sx={{ mt: 2, fontStyle: 'italic' }}
         >
-          made with passion by ~Roshan Naik
+          made by Komal and Roshan
         </Typography>
       </Container>
     </Box>
